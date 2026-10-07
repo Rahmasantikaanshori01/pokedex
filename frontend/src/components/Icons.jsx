@@ -54,20 +54,57 @@ export const AlertIcon = (props) => (
   </svg>
 );
 
-export function PokeballIcon({ className = "", ...props }) {
+export function PokeballIcon({ className = "", width = 24, height = 24, ...props }) {
   return (
     <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      viewBox="0 0 100 100"
       className={className}
       aria-hidden="true"
       {...props}
     >
-      <circle cx="12" cy="12" r="9.5" fill="currentColor" />
-      <path d="M2.5 12h19" stroke="white" strokeWidth="2" />
-      <circle cx="12" cy="12" r="3.2" fill="white" />
-      <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+      <g>
+        {/* Hemisfer Atas (Merah) */}
+        <path d="M 4 50 A 46 46 0 0 1 96 50 Z" fill="#eb2d2d" />
+        {/* Shading/Bayangan Sphere Hemisfer Atas */}
+        <path
+          d="M 50 4 A 46 46 0 0 1 96 50 A 41 41 0 0 0 50 9 Z"
+          fill="#c41c1c"
+          opacity="0.45"
+        />
+
+        {/* Hemisfer Bawah (Putih) */}
+        <path d="M 4 50 A 46 46 0 0 0 96 50 Z" fill="#ffffff" />
+        {/* Shading/Bayangan Sphere Hemisfer Bawah */}
+        <path
+          d="M 8 50 A 42 42 0 0 0 92 50 A 46 46 0 0 1 8 50 Z"
+          fill="#d1d5db"
+          opacity="0.85"
+        />
+
+        {/* Garis Pembagi Tengah (Hitam) */}
+        <path d="M 3.8 46.5 H 96.2 V 53.5 H 3.8 Z" fill="#1c1e22" />
+
+        {/* Cincin Luar Tombol Tengah (Hitam) */}
+        <circle cx="50" cy="50" r="16.5" fill="#1c1e22" />
+
+        {/* Cincin Putih Tombol Tengah */}
+        <circle cx="50" cy="50" r="11" fill="#ffffff" />
+
+        {/* Tombol Tengah (Charcoal Black) */}
+        <circle cx="50" cy="50" r="6.5" fill="#2c2e33" />
+
+        {/* Garis Lingkar Luar (Hitam Tebal) */}
+        <circle
+          cx="50"
+          cy="50"
+          r="46.5"
+          fill="none"
+          stroke="#1c1e22"
+          strokeWidth="7"
+        />
+      </g>
     </svg>
   );
 }
