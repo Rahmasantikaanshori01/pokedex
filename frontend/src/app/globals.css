@@ -1830,3 +1830,732 @@ footer small {
 .catch-error {
   color: #c0392b;
 }
+
+/* =========================================================
+   MY POKEMON / COLLECTION
+   ========================================================= */
+
+.collection-page {
+  padding-bottom: 80px;
+}
+
+.collection-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.collection-header h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.collection-header p {
+  max-width: 520px;
+  margin: 0;
+  color: #667085;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.collection-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #d9dee7;
+  border-radius: 16px;
+  background: #fff;
+  color: #202b3c;
+}
+
+.collection-count svg {
+  width: 22px;
+  height: 22px;
+}
+
+.collection-count span {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.collection-count small {
+  color: #667085;
+}
+
+/* Loading */
+
+.collection-loading {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.collection-loading-card {
+  min-height: 420px;
+  border-radius: 24px;
+  background: linear-gradient(90deg,
+      #eef1f4 25%,
+      #f7f8f9 50%,
+      #eef1f4 75%);
+  background-size: 200% 100%;
+  animation: collectionLoading 1.5s infinite;
+}
+
+@keyframes collectionLoading {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty State */
+
+.collection-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 420px;
+  padding: 48px 24px;
+
+  border: 1px dashed #b8c0cc;
+  border-radius: 28px;
+
+  text-align: center;
+}
+
+.collection-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 72px;
+  height: 72px;
+  margin-bottom: 20px;
+
+  border-radius: 50%;
+  background: #eef1f4;
+}
+
+.collection-empty-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.collection-empty h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.collection-empty p {
+  max-width: 480px;
+  margin: 0 0 24px;
+
+  color: #667085;
+  line-height: 1.7;
+}
+
+.collection-empty-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+  padding: 0 22px;
+
+  border-radius: 14px;
+
+  background: #202b3c;
+  color: #fff;
+
+  font-weight: 700;
+  text-decoration: none;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.collection-empty-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 24px rgb(32 43 60 / 18%);
+}
+
+/* Collection Grid */
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.collection-card {
+  overflow: hidden;
+
+  border: 1px solid #dfe3e8;
+  border-radius: 24px;
+
+  background: #fff;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.collection-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 18px 40px rgb(32 43 60 / 10%);
+}
+
+.collection-card-image {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 270px;
+
+  overflow: hidden;
+
+  background: #f1f5f3;
+
+  text-decoration: none;
+}
+
+.collection-card-image img {
+  width: 220px;
+  height: 220px;
+
+  object-fit: contain;
+
+  transition: transform 0.25s ease;
+}
+
+.collection-card:hover .collection-card-image img {
+  transform: scale(1.05);
+}
+
+.collection-card-number {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  color: #7a8493;
+}
+
+.collection-card-info {
+  padding: 22px;
+}
+
+.collection-card-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.collection-card-label {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #8a94a3;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.collection-card-title h2 {
+  margin: 0;
+
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.collection-card-id {
+  color: #98a1af;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.collection-card-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin-top: 16px;
+}
+
+.collection-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  margin-top: 20px;
+}
+
+.collection-card-meta>div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  padding: 12px;
+
+  border-radius: 12px;
+  background: #f6f7f8;
+}
+
+.collection-card-meta span {
+  color: #8a94a3;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.collection-card-meta strong {
+  color: #202b3c;
+  font-size: 15px;
+}
+
+.collection-detail-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 46px;
+
+  margin-top: 18px;
+
+  border: 1px solid #d9dee7;
+  border-radius: 13px;
+
+  color: #202b3c;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.collection-detail-button:hover {
+  background: #202b3c;
+  color: #fff;
+}
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+
+  .collection-grid,
+  .collection-loading {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .collection-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .collection-count {
+    width: 100%;
+  }
+
+  .collection-grid,
+  .collection-loading {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-card-image {
+    min-height: 250px;
+  }
+}
+
+/* =========================================================
+   MY POKEMON - FINAL OVERRIDE
+   ========================================================= */
+
+.collection-page {
+  width: 100% !important;
+  padding-bottom: 80px !important;
+}
+
+.collection-header {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 32px !important;
+  margin-bottom: 40px !important;
+}
+
+.collection-header h1 {
+  display: block !important;
+  margin: 8px 0 12px !important;
+
+  font-size: clamp(42px, 5vw, 64px) !important;
+  line-height: 0.95 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.05em !important;
+
+  color: #202b3c !important;
+}
+
+.collection-header p {
+  display: block !important;
+  max-width: 560px !important;
+  margin: 0 !important;
+
+  color: #667085 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+.collection-count {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+
+  padding: 12px 18px !important;
+
+  border: 1px solid #d9dee7 !important;
+  border-radius: 16px !important;
+
+  background: #ffffff !important;
+}
+
+.collection-count svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.collection-count span {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+}
+
+.collection-count small {
+  color: #667085 !important;
+}
+
+/* GRID */
+
+.collection-grid {
+  display: grid !important;
+
+  width: 100% !important;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr)) !important;
+
+  gap: 24px !important;
+}
+
+/* CARD */
+
+.collection-card {
+  display: flex !important;
+  flex-direction: column !important;
+
+  width: 100% !important;
+  overflow: hidden !important;
+
+  border: 1px solid #dfe3e8 !important;
+  border-radius: 24px !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 8px 24px rgb(32 43 60 / 6%) !important;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease !important;
+}
+
+.collection-card:hover {
+  transform: translateY(-5px) !important;
+
+  box-shadow:
+    0 18px 40px rgb(32 43 60 / 12%) !important;
+}
+
+/* IMAGE */
+
+.collection-card-image {
+  position: relative !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  height: 280px !important;
+  min-height: 280px !important;
+
+  overflow: hidden !important;
+
+  background:
+    radial-gradient(circle at center,
+      #ffffff 0%,
+      #edf5f1 100%) !important;
+
+  text-decoration: none !important;
+}
+
+.collection-card-image img {
+  display: block !important;
+
+  width: 230px !important;
+  height: 230px !important;
+
+  max-width: 230px !important;
+  max-height: 230px !important;
+
+  object-fit: contain !important;
+
+  transition:
+    transform 0.25s ease !important;
+}
+
+.collection-card:hover .collection-card-image img {
+  transform: scale(1.07) !important;
+}
+
+.collection-card-number {
+  position: absolute !important;
+
+  top: 18px !important;
+  left: 20px !important;
+
+  color: #7a8493 !important;
+
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+/* INFO */
+
+.collection-card-info {
+  display: flex !important;
+  flex-direction: column !important;
+
+  width: 100% !important;
+
+  padding: 22px !important;
+
+  box-sizing: border-box !important;
+}
+
+.collection-card-title {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+
+  width: 100% !important;
+  gap: 16px !important;
+}
+
+.collection-card-label {
+  display: block !important;
+
+  margin-bottom: 6px !important;
+
+  color: #8a94a3 !important;
+
+  font-size: 10px !important;
+  font-weight: 800 !important;
+
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+.collection-card-title h2 {
+  display: block !important;
+
+  margin: 0 !important;
+
+  color: #202b3c !important;
+
+  font-size: 28px !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+
+  letter-spacing: -0.03em !important;
+}
+
+.collection-card-id {
+  color: #98a1af !important;
+
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+/* TYPES */
+
+.collection-card-types {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+
+  margin-top: 16px !important;
+}
+
+/* META */
+
+.collection-card-meta {
+  display: grid !important;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr)) !important;
+
+  gap: 10px !important;
+
+  width: 100% !important;
+
+  margin-top: 20px !important;
+}
+
+.collection-card-meta>div {
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 5px !important;
+
+  padding: 12px !important;
+
+  border-radius: 12px !important;
+
+  background: #f5f7f8 !important;
+}
+
+.collection-card-meta span {
+  color: #8a94a3 !important;
+
+  font-size: 10px !important;
+  font-weight: 800 !important;
+
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.collection-card-meta strong {
+  color: #202b3c !important;
+
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+/* VIEW DETAILS */
+
+.collection-detail-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-height: 46px !important;
+
+  margin-top: 18px !important;
+
+  box-sizing: border-box !important;
+
+  border: 1px solid #d9dee7 !important;
+  border-radius: 13px !important;
+
+  background: #ffffff !important;
+  color: #202b3c !important;
+
+  font-size: 14px !important;
+  font-weight: 800 !important;
+
+  text-decoration: none !important;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease !important;
+}
+
+.collection-detail-button:hover {
+  background: #202b3c !important;
+  color: #ffffff !important;
+}
+
+/* EMPTY */
+
+.collection-empty {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-height: 420px !important;
+
+  box-sizing: border-box !important;
+
+  padding: 48px 24px !important;
+
+  border: 1px dashed #b8c0cc !important;
+  border-radius: 28px !important;
+
+  text-align: center !important;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+  .collection-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .collection-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .collection-count {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .collection-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .collection-card-image {
+    height: 260px !important;
+    min-height: 260px !important;
+  }
+}
