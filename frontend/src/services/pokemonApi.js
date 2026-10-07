@@ -4,6 +4,7 @@
  * Frontend tidak mengakses PokéAPI secara langsung.
  * Semua request Pokémon melewati Laravel Backend.
  */
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -131,7 +132,9 @@ export async function searchPokemonFromApi(
  * yang lebih sederhana dibandingkan response mentah PokéAPI.
  */
 function normalizePokemonDetail(raw) {
-  if (!raw) return null;
+  if (!raw) {
+    return null;
+  }
 
   const stats = {
     hp: 0,
@@ -272,6 +275,7 @@ export async function catchPokemon(pokemon) {
         data: null,
         success: false,
         caught: false,
+        message: "",
         error:
           json?.message || "Gagal menangkap Pokémon.",
       };
@@ -337,7 +341,7 @@ export async function getMyPokemon({ signal } = {}) {
     }
 
     console.error(
-      `[Pokédex API] Gagal mengambil koleksi Pokémon: ${error.message}`
+      `[Pokédex Collection] Gagal mengambil koleksi: ${error.message}`
     );
 
     return {
@@ -345,6 +349,72 @@ export async function getMyPokemon({ signal } = {}) {
       count: 0,
       error:
         "Gagal memuat koleksi Pokémon. Pastikan server Laravel sedang berjalan.",
+    };
+  }
+}
+
+/**
+ * Melepaskan Pokémon dari koleksi.
+ *
+ * Endpoint:
+ * DELETE /api/my-pokemon/{id}
+ *
+ * ID yang digunakan adalah ID database
+ * dari tabel my_pokemon.
+ */
+export async function releasePokemon(
+  id,
+  { signal } = {}
+) {
+  const endpoint =
+    `${API_BASE_URL}/api/my-pokemon/` +
+    encodeURIComponent(id);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message:
+          json?.message ||
+          "Gagal melepaskan Pokémon.",
+        error:
+          json?.message ||
+          "Gagal melepaskan Pokémon.",
+      };
+    }
+
+    return {
+      success: true,
+      message:
+        json?.message ||
+        "Pokémon berhasil dilepaskan dari koleksi.",
+      error: null,
+    };
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
+
+    console.error(
+      `[Pokédex Collection] Gagal release Pokémon: ${error.message}`
+    );
+
+    return {
+      success: false,
+      message:
+        "Tidak dapat terhubung ke server Laravel.",
+      error:
+        "Tidak dapat terhubung ke server Laravel.",
     };
   }
 }
