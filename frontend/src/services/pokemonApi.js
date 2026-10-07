@@ -12,20 +12,6 @@ export const API_BASE_URL =
  *
  * Endpoint:
  * GET /api/pokemon
- *
- * Response Backend:
- * {
- *   count: 1351,
- *   next: "...",
- *   previous: null,
- *   results: [
- *     {
- *       id: 1,
- *       name: "bulbasaur",
- *       image: "https://..."
- *     }
- *   ]
- * }
  */
 export async function getPokemonList({ signal } = {}) {
   const endpoint = `${API_BASE_URL}/api/pokemon?limit=20&offset=0`;
@@ -246,6 +232,119 @@ export async function getPokemonDetail(
       error:
         "Gagal memuat detail Pokémon. Pastikan server Laravel sedang berjalan.",
       isNotFound: false,
+    };
+  }
+}
+
+/**
+ * Mencoba menangkap Pokémon.
+ *
+ * Endpoint:
+ * POST /api/my-pokemon
+ *
+ * Backend akan menentukan apakah Pokémon berhasil
+ * ditangkap atau melarikan diri.
+ */
+export async function catchPokemon(pokemon) {
+  const endpoint = `${API_BASE_URL}/api/my-pokemon`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        pokemon_id: pokemon.id,
+        name: pokemon.name,
+        image: pokemon.image,
+        types: pokemon.types,
+        height: pokemon.height,
+        weight: pokemon.weight,
+      }),
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      return {
+        data: null,
+        success: false,
+        caught: false,
+        error:
+          json?.message || "Gagal menangkap Pokémon.",
+      };
+    }
+
+    return {
+      data: json?.data ?? null,
+      success: json?.success ?? false,
+      caught: json?.caught ?? false,
+      message: json?.message ?? "",
+      error: null,
+    };
+  } catch (error) {
+    console.error(
+      `[Pokédex API] Gagal menangkap Pokémon: ${error.message}`
+    );
+
+    return {
+      data: null,
+      success: false,
+      caught: false,
+      message: "",
+      error:
+        "Gagal menghubungi server. Pastikan Laravel sedang berjalan.",
+    };
+  }
+}
+
+/**
+ * Mengambil Pokémon yang sudah ditangkap.
+ *
+ * Endpoint:
+ * GET /api/my-pokemon
+ */
+export async function getMyPokemon({ signal } = {}) {
+  const endpoint = `${API_BASE_URL}/api/my-pokemon`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Server backend merespons HTTP ${response.status}`
+      );
+    }
+
+    const json = await response.json();
+
+    return {
+      data: Array.isArray(json?.data) ? json.data : [],
+      count: json?.count ?? 0,
+      error: null,
+    };
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
+
+    console.error(
+      `[Pokédex API] Gagal mengambil koleksi Pokémon: ${error.message}`
+    );
+
+    return {
+      data: null,
+      count: 0,
+      error:
+        "Gagal memuat koleksi Pokémon. Pastikan server Laravel sedang berjalan.",
     };
   }
 }
