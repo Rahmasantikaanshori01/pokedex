@@ -1,0 +1,10 @@
+{
+  "description": "Explore, catch, and manage your Pokémon collection with an interactive, user-friendly Pokédex that offers detailed stats, history tracking, and seamless navigation.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
