@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import PokemonCard from "../components/PokemonCard";
 import CardGridSkeleton from "../components/CardGridSkeleton";
@@ -9,7 +9,11 @@ import ErrorState from "../components/ErrorState";
 import PageIntro from "../components/PageIntro";
 import SearchBar from "../components/SearchBar";
 import { PokeballIcon } from "../components/Icons";
-import { getPokemonList } from "../services/pokemonApi";
+import {
+  getPokemonList,
+  searchPokemonFromApi,
+} from "../services/pokemonApi";
+import { useDebounce } from "../hooks/useDebounce";
 import {
   artworkUrl,
   featuredPokemon,
@@ -19,22 +23,33 @@ import {
 export default function Home() {
   const [activeTab, setActiveTab] = useState("Home");
 
-  // State untuk daftar Pokémon dari API backend
+  // Data Pokémon dari Laravel API
   const [pokemonList, setPokemonList] = useState([]);
+
+  // Status loading dan error
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State pencarian lokal di dalam daftar
+  // Input pencarian
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fungsi untuk mengambil data Pokémon dari API Backend (GET /api/pokemon)
+  // Search yang sudah melalui debounce
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
+
+  /**
+   * Mengambil daftar Pokémon awal dari Laravel.
+   *
+   * GET /api/pokemon
+   */
   const fetchPokemon = useCallback(() => {
     setIsLoading(true);
     setError(null);
 
     const controller = new AbortController();
 
-    getPokemonList({ signal: controller.signal })
+    getPokemonList({
+      signal: controller.signal,
+    })
       .then((res) => {
         if (res.error) {
           setError(res.error);
@@ -43,11 +58,15 @@ export default function Home() {
           setPokemonList(res.data || []);
           setError(null);
         }
+
         setIsLoading(false);
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
-          setError("Gagal memuat data Pokémon. Silakan coba lagi.");
+          setError(
+            "Gagal memuat data Pokémon. Silakan coba lagi."
+          );
+          setPokemonList([]);
           setIsLoading(false);
         }
       });
@@ -55,25 +74,72 @@ export default function Home() {
     return () => controller.abort();
   }, []);
 
-  // Ambil data dari API backend saat halaman pertama kali dimuat
+  /**
+   * Mengambil daftar Pokémon pertama kali.
+   */
   useEffect(() => {
     const cleanup = fetchPokemon();
+
     return cleanup;
   }, [fetchPokemon]);
 
-  // Filter daftar Pokémon berdasarkan input pencarian
-  const displayedPokemon = useMemo(() => {
-    const trimmed = searchQuery.trim().toLowerCase();
-    if (!trimmed) return pokemonList;
-    return pokemonList.filter((poke) =>
-      poke.name.toLowerCase().includes(trimmed)
-    );
-  }, [pokemonList, searchQuery]);
+  /**
+   * Search Pokémon melalui Laravel API.
+   *
+   * GET /api/pokemon?search={keyword}
+   */
+  useEffect(() => {
+    const keyword = debouncedSearchQuery.trim();
+
+    // Jika input kosong, kembali ke daftar awal
+    if (!keyword) {
+      fetchPokemon();
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setIsLoading(true);
+    setError(null);
+
+    searchPokemonFromApi(keyword, {
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (res.error) {
+          setError(res.error);
+          setPokemonList([]);
+        } else {
+          setPokemonList(res.data || []);
+          setError(null);
+        }
+
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          setError(
+            "Gagal melakukan pencarian Pokémon. Silakan coba lagi."
+          );
+          setPokemonList([]);
+          setIsLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [debouncedSearchQuery, fetchPokemon]);
+
+  const isSearching = Boolean(
+    debouncedSearchQuery.trim()
+  );
 
   return (
     <div className="app-shell">
       {/* 1. Header / Navbar */}
-      <Navbar activeTab={activeTab} onSelectTab={setActiveTab} />
+      <Navbar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+      />
 
       <main className="page">
         {/* 2. Hero Section */}
@@ -85,19 +151,25 @@ export default function Home() {
               <strong>Choose your partner</strong>
             </div>
 
-            <div className="featured-cards" aria-label="Featured Pokémon">
+            <div
+              className="featured-cards"
+              aria-label="Featured Pokémon"
+            >
               {featuredPokemon.map((item, index) => (
                 <div
                   key={item.id}
-                  className={`featured-card featured-card-${index + 1}`}
+                  className={`featured-card featured-card-${index + 1
+                    }`}
                 >
                   <span>{formatPokemonId(item.id)}</span>
+
                   <img
                     src={artworkUrl(item.id)}
                     alt={item.name}
                     width={165}
                     height={165}
                   />
+
                   <div>
                     <strong>{item.name}</strong>
                     <small>{item.type}</small>
@@ -106,7 +178,9 @@ export default function Home() {
               ))}
             </div>
 
-            <span className="showcase-note">Swipe through the classics</span>
+            <span className="showcase-note">
+              Swipe through the classics
+            </span>
           </div>
 
           {/* Hero Copy */}
@@ -114,18 +188,25 @@ export default function Home() {
             <span className="eyebrow">
               <PokeballIcon /> Gotta find ’em all
             </span>
+
             <h1>
               <span>Find your</span>
               <span>favorite</span>
               <em>Pokémon</em>
             </h1>
+
             <p>
-              Meet every Pokémon, learn what makes them special, and build a team
-              that feels completely yours.
+              Meet every Pokémon, learn what makes them
+              special, and build a team that feels completely
+              yours.
             </p>
 
-            <div className="hero-mascot" aria-hidden="true">
+            <div
+              className="hero-mascot"
+              aria-hidden="true"
+            >
               <span>Hi, trainer!</span>
+
               <img
                 src={artworkUrl(194)}
                 alt="Wooper mascot"
@@ -136,7 +217,10 @@ export default function Home() {
           </div>
 
           {/* Corner Pikachu Artwork */}
-          <div className="corner-pikachu" aria-hidden="true">
+          <div
+            className="corner-pikachu"
+            aria-hidden="true"
+          >
             <img
               src={artworkUrl(25)}
               alt="Corner Pikachu"
@@ -149,25 +233,28 @@ export default function Home() {
         {/* 3. Search Band */}
         <section className="home-search-band">
           <div>
-            <span className="eyebrow">Who are you looking for?</span>
+            <span className="eyebrow">
+              Who are you looking for?
+            </span>
+
             <h2>Search the Pokédex</h2>
           </div>
+
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
             onClear={() => setSearchQuery("")}
             placeholder="Cari Pokémon berdasarkan nama..."
-            disabled={isLoading || Boolean(error)}
+            disabled={Boolean(error)}
           />
         </section>
 
         {/* 4. Main Pokédex Content Section */}
         <section className="content-section">
-          {/* Header Intro */}
           <PageIntro
             eyebrow="Explore the Pokédex"
             title={
-              searchQuery.trim()
+              isSearching
                 ? `Hasil pencarian untuk “${searchQuery}”`
                 : "Popular Pokémon"
             }
@@ -175,57 +262,81 @@ export default function Home() {
               !isLoading &&
               !error && (
                 <span className="result-count">
-                  {displayedPokemon.length} Pokémon
+                  {pokemonList.length} Pokémon
                 </span>
               )
             }
           />
 
-          {/* Kondisi 1: Loading State saat data sedang dimuat dari backend */}
-          {isLoading && <CardGridSkeleton count={10} />}
+          {/* Loading */}
+          {isLoading && (
+            <CardGridSkeleton count={10} />
+          )}
 
-          {/* Kondisi 2: Error State jika request ke backend gagal */}
+          {/* Error */}
           {!isLoading && error && (
             <ErrorState
               title="Gagal memuat data Pokémon"
               message={error}
-              onRetry={fetchPokemon}
+              onRetry={
+                isSearching
+                  ? () =>
+                    setSearchQuery(searchQuery)
+                  : fetchPokemon
+              }
               retryLabel="Coba lagi"
             />
           )}
 
-          {/* Kondisi 3: Empty State jika data kosong */}
-          {!isLoading && !error && displayedPokemon.length === 0 && (
-            <EmptyState
-              title="Pokémon tidak ditemukan"
-              message={
-                searchQuery.trim()
-                  ? `Tidak ada Pokémon yang cocok dengan nama “${searchQuery}”.`
-                  : "Belum ada data Pokémon yang tersedia dari server backend."
-              }
-              actionLabel={searchQuery.trim() ? "Hapus pencarian" : undefined}
-              onAction={
-                searchQuery.trim() ? () => setSearchQuery("") : undefined
-              }
-            />
-          )}
+          {/* Empty */}
+          {!isLoading &&
+            !error &&
+            pokemonList.length === 0 && (
+              <EmptyState
+                title="Pokémon tidak ditemukan"
+                message={
+                  isSearching
+                    ? `Tidak ada Pokémon yang cocok dengan nama “${searchQuery}”.`
+                    : "Belum ada data Pokémon yang tersedia dari server backend."
+                }
+                actionLabel={
+                  isSearching
+                    ? "Hapus pencarian"
+                    : undefined
+                }
+                onAction={
+                  isSearching
+                    ? () => setSearchQuery("")
+                    : undefined
+                }
+              />
+            )}
 
-          {/* Kondisi 4: Menampilkan Daftar Pokémon dari API Backend */}
-          {!isLoading && !error && displayedPokemon.length > 0 && (
-            <div className="pokemon-grid">
-              {displayedPokemon.map((poke) => (
-                <PokemonCard key={poke.id} pokemon={poke} />
-              ))}
-            </div>
-          )}
+          {/* Pokémon List */}
+          {!isLoading &&
+            !error &&
+            pokemonList.length > 0 && (
+              <div className="pokemon-grid">
+                {pokemonList.map((poke) => (
+                  <PokemonCard
+                    key={poke.id}
+                    pokemon={poke}
+                  />
+                ))}
+              </div>
+            )}
         </section>
       </main>
 
       {/* 5. Footer */}
       <footer>
         <PokeballIcon />
+
         <span>Pokédex Project</span>
-        <small>Discover. Catch. Remember.</small>
+
+        <small>
+          Discover. Catch. Remember.
+        </small>
       </footer>
     </div>
   );
