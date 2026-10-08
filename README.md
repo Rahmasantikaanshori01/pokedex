@@ -531,17 +531,35 @@ Frontend kemudian berkomunikasi dengan backend menggunakan REST API.
 
 # 🌐 Deployment
 
-Frontend direncanakan untuk di-deploy menggunakan **Vercel**.
+Project Pokedex menggunakan arsitektur deployment yang memisahkan frontend, backend, dan database.
+
+### Arsitektur Deployment
 
 ```text
-Frontend
-   │
-   ▼
-Vercel
-```
-
-Backend dan database akan disesuaikan dengan kebutuhan deployment agar aplikasi dapat berjalan secara online.
-
+                    USER
+                      │
+                      ▼
+              ┌───────────────┐
+              │    Vercel     │
+              │   Frontend    │
+              │    Next.js    │
+              └───────┬───────┘
+                      │
+                      │ HTTPS / REST API
+                      ▼
+              ┌───────────────┐
+              │    Railway    │
+              │    Backend    │
+              │    Laravel    │
+              └───────┬───────┘
+                      │
+             ┌────────┴────────┐
+             │                 │
+             ▼                 ▼
+      ┌─────────────┐   ┌─────────────┐
+      │   MySQL     │   │   PokéAPI   │
+      │   Railway   │   │ External API│
+      └─────────────┘   └─────────────┘
 ---
 
 # 🌿 Git
