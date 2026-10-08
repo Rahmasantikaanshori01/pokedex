@@ -531,7 +531,7 @@ Frontend kemudian berkomunikasi dengan backend menggunakan REST API.
 
 # 🌐 Deployment
 
-Project Pokedex menggunakan arsitektur deployment yang memisahkan frontend, backend, dan database.
+Project Pokedex menggunakan arsitektur deployment yang terdiri dari **Frontend, Backend, Database, dan External API**.
 
 ### Arsitektur Deployment
 
@@ -545,7 +545,8 @@ Project Pokedex menggunakan arsitektur deployment yang memisahkan frontend, back
               │    Next.js    │
               └───────┬───────┘
                       │
-                      │ HTTPS / REST API
+                HTTPS / REST API
+                      │
                       ▼
               ┌───────────────┐
               │    Railway    │
@@ -557,9 +558,112 @@ Project Pokedex menggunakan arsitektur deployment yang memisahkan frontend, back
              │                 │
              ▼                 ▼
       ┌─────────────┐   ┌─────────────┐
-      │   MySQL     │   │   PokéAPI   │
+      │    MySQL    │   │   PokéAPI   │
       │   Railway   │   │ External API│
       └─────────────┘   └─────────────┘
+```
+
+### Frontend
+
+Frontend menggunakan **Next.js** dan di-deploy menggunakan **Vercel**.
+
+Vercel digunakan untuk menjalankan aplikasi frontend dan melakukan deployment dari repository GitHub.
+
+Frontend berkomunikasi dengan backend Laravel menggunakan **REST API** melalui koneksi HTTPS.
+
+### Backend
+
+Backend menggunakan **Laravel** dan di-deploy menggunakan **Railway**.
+
+Backend bertanggung jawab untuk:
+
+- Menyediakan REST API untuk frontend
+- Mengambil data Pokémon dari PokéAPI
+- Menangani pencarian Pokémon
+- Menampilkan detail Pokémon
+- Menangani proses Catch Pokémon
+- Menyimpan Pokémon ke database
+- Menangani proses Release Pokémon
+- Menyimpan riwayat Catch dan Release
+- Mengambil data koleksi Pokémon
+- Mengambil data riwayat Pokémon
+
+Frontend tidak mengakses PokéAPI secara langsung. Seluruh request data Pokémon dilakukan melalui backend Laravel.
+
+### Database
+
+Database menggunakan **MySQL** dan di-host menggunakan **Railway**.
+
+Database digunakan untuk menyimpan data yang perlu dipertahankan oleh aplikasi, terutama:
+
+- Data Pokémon yang berhasil ditangkap
+- Data koleksi Pokémon
+- Riwayat Catch
+- Riwayat Release
+
+Data yang tersimpan di database tetap tersedia meskipun halaman aplikasi di-refresh.
+
+### External API
+
+Project menggunakan **PokéAPI** sebagai sumber data Pokémon.
+
+PokéAPI diakses melalui backend Laravel sehingga frontend tidak melakukan request langsung ke PokéAPI.
+
+### Alur Deployment
+
+```text
+User
+ │
+ ▼
+Vercel
+Next.js Frontend
+ │
+ │ HTTPS / REST API
+ ▼
+Railway
+Laravel Backend
+ │
+ ├──────────────► PokéAPI
+ │                    │
+ │                    ▼
+ │               Data Pokémon
+ │
+ └──────────────► MySQL
+                      │
+                      ▼
+              Data Koleksi & Riwayat
+```
+
+### Deployment Flow
+
+```text
+GitHub Repository
+       │
+       ├──────────────► Vercel
+       │                  │
+       │                  ▼
+       │             Next.js Frontend
+       │                  │
+       │                  │ REST API
+       │                  ▼
+       └──────────────► Railway
+                          │
+                          ├── Laravel Backend
+                          │
+                          └── MySQL Database
+```
+
+### Deployment Stack
+
+| Bagian | Teknologi | Platform |
+|--------|-----------|----------|
+| Frontend | Next.js | Vercel |
+| Backend | Laravel | Railway |
+| Database | MySQL | Railway |
+| External API | PokéAPI | PokéAPI |
+
+Perubahan pada project dapat dikirim ke repository GitHub. Setelah perubahan berhasil di-push, deployment pada platform yang terhubung dengan repository dapat diperbarui sesuai konfigurasi deployment.
+
 ---
 
 # 🌿 Git
@@ -570,6 +674,24 @@ Melihat status perubahan:
 
 ```bash
 git status
+```
+
+Menambahkan perubahan:
+
+```bash
+git add .
+```
+
+Membuat commit:
+
+```bash
+git commit -m "pesan commit"
+```
+
+Mengirim perubahan ke GitHub:
+
+```bash
+git push
 ```
 
 Menambahkan perubahan:
