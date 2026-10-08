@@ -1,21 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getHistory } from "@/services/historyApi.js";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+
+import Navbar from "../../components/Navbar";
+import ErrorState from "../../components/ErrorState";
+import { PokeballIcon } from "../../components/Icons";
+import { getHistory } from "../../services/historyApi";
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function loadHistory() {
-      try {
-        const result = await getHistory();
+  const loadHistory = useCallback(() => {
+    const controller = new AbortController();
 
-        const data = Array.isArray(result.data) ? result.data : [];
+    setIsLoading(true);
+    setError(null);
 
-        // Ambil hanya aktivitas terakhir dari setiap Pokemon
+    getHistory({
+      signal: controller.signal,
+    })
+      .then((result) => {
+        if (result.error) {
+          setError(result.error);
+          setHistory([]);
+          return;
+        }
+
+        const data = Array.isArray(result.data)
+          ? result.data
+          : [];
+
+        // Ambil aktivitas terakhir dari setiap Pokémon
         const latestHistory = data.reduce((acc, item) => {
           if (!acc[item.pokemon_id]) {
             acc[item.pokemon_id] = item;
@@ -25,105 +43,392 @@ export default function HistoryPage() {
         }, {});
 
         setHistory(Object.values(latestHistory));
-        setError(result.error);
-      } catch (err) {
+      })
+      .catch((err) => {
         if (err.name !== "AbortError") {
-          setError("Gagal memuat history.");
+          setError(
+            "Gagal memuat riwayat Pokémon. Silakan coba lagi."
+          );
         }
-      } finally {
-        setLoading(false);
-      }
-    }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 
-    loadHistory();
+    return () => {
+      controller.abort();
+    };
   }, []);
 
+  useEffect(() => {
+    const cleanup = loadHistory();
+
+    return cleanup;
+  }, [loadHistory]);
+
   return (
-    <main className="min-h-screen bg-[#f8f8f8] px-6 py-10">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <p className="text-sm font-medium text-gray-500">
-            POKEDEX
-          </p>
+    <div className="app-shell">
+      {/* NAVBAR SAMA DENGAN MY POKÉMON */}
+      <Navbar activeTab="History" />
 
-          <h1 className="mt-2 text-4xl font-bold text-gray-900">
-            History
-          </h1>
+      <main className="page content-section history-page">
 
-          <p className="mt-2 text-gray-500">
-            Riwayat aktivitas Pokemon kamu.
-          </p>
-        </div>
+        {/* ================= HEADER ================= */}
+        <section className="history-header">
+          <div>
+            <span className="eyebrow">
+              Your activity
+            </span>
 
-        {loading && (
-          <div className="flex min-h-[400px] items-center justify-center rounded-3xl bg-white shadow-sm">
-            <p className="text-gray-500">
-              Memuat history...
+            <h1>History</h1>
+
+            <p>
+              Riwayat aktivitas Pokémon kamu.
             </p>
           </div>
-        )}
 
-        {!loading && error && (
-          <div className="flex min-h-[400px] items-center justify-center rounded-3xl bg-white shadow-sm">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-red-500">
-                Gagal memuat history
-              </h2>
+          {!isLoading && !error && (
+            <div className="history-count">
+              <PokeballIcon />
 
-              <p className="mt-2 text-sm text-gray-500">
-                {error}
-              </p>
+              <span>{history.length}</span>
+
+              <small>Pokémon</small>
             </div>
-          </div>
+          )}
+        </section>
+
+        {/* ================= LOADING ================= */}
+        {isLoading && (
+          <section className="history-grid">
+            <div className="history-card history-skeleton" />
+            <div className="history-card history-skeleton" />
+            <div className="history-card history-skeleton" />
+          </section>
         )}
 
-        {!loading && !error && history.length === 0 && (
-          <div className="flex min-h-[400px] items-center justify-center rounded-3xl bg-white shadow-sm">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-500">
-                History
+        {/* ================= ERROR ================= */}
+        {!isLoading && error && (
+          <ErrorState
+            title="History Tidak Tersedia"
+            message={error}
+            onRetry={loadHistory}
+            retryLabel="Coba lagi"
+          />
+        )}
+
+        {/* ================= EMPTY ================= */}
+        {!isLoading &&
+          !error &&
+          history.length === 0 && (
+            <section className="collection-empty">
+              <div className="collection-empty-icon">
+                <PokeballIcon />
               </div>
 
-              <h2 className="text-xl font-semibold text-gray-900">
-                Belum ada history
-              </h2>
+              <h2>Belum Ada History</h2>
 
-              <p className="mt-2 text-sm text-gray-500">
-                Pokemon yang kamu lihat akan muncul di sini.
+              <p>
+                Aktivitas Catch dan Release Pokémon
+                kamu akan muncul di sini.
               </p>
-            </div>
-          </div>
-        )}
 
-        {!loading && !error && history.length > 0 && (
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4">
-            {history.map((pokemon) => (
-              <div
-                key={pokemon.pokemon_id}
-                className="rounded-3xl bg-white p-5 shadow-sm"
+              <Link
+                href="/"
+                className="collection-empty-button"
               >
-                <img
-                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.pokemon_id}.png`}
-                  alt={pokemon.pokemon_name}
-                  className="mx-auto h-32 w-32 object-contain"
-                />
+                Explore Pokémon
+              </Link>
+            </section>
+          )}
 
-                <h2 className="mt-3 text-center text-lg font-semibold capitalize text-gray-900">
-                  {pokemon.pokemon_name}
-                </h2>
+        {/* ================= HISTORY CARDS ================= */}
+        {!isLoading &&
+          !error &&
+          history.length > 0 && (
+            <section className="history-grid">
+              {history.map((item) => {
+                const displayName = item.pokemon_name
+                  ? item.pokemon_name
+                    .charAt(0)
+                    .toUpperCase() +
+                  item.pokemon_name.slice(1)
+                  : "Unknown";
 
-                <p className="mt-1 text-center text-sm capitalize text-gray-500">
-                  {pokemon.activity}
-                </p>
+                const isCatch =
+                  item.activity === "catch";
 
-                <p className="mt-1 text-center text-xs text-gray-400">
-                  #{String(pokemon.pokemon_id).padStart(3, "0")}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+                const activityLabel = isCatch
+                  ? "Catch"
+                  : "Release";
+
+                return (
+                  <article
+                    className="history-card"
+                    key={item.pokemon_id}
+                  >
+                    {/* Pokémon Image */}
+                    <Link
+                      href={`/pokemon/${item.pokemon_id}`}
+                      className="history-card-image"
+                    >
+                      <img
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.pokemon_id}.png`}
+                        alt={`${displayName} official artwork`}
+                        width={160}
+                        height={160}
+                      />
+                    </Link>
+
+                    {/* Pokémon Name */}
+                    <Link
+                      href={`/pokemon/${item.pokemon_id}`}
+                      className="history-card-name"
+                    >
+                      {displayName}
+                    </Link>
+
+                    {/* Activity */}
+                    <span
+                      className={`history-card-activity ${isCatch
+                          ? "is-catch"
+                          : "is-release"
+                        }`}
+                    >
+                      {activityLabel}
+                    </span>
+
+                    {/* Pokémon ID */}
+                    <span className="history-card-id">
+                      #
+                      {String(item.pokemon_id).padStart(
+                        3,
+                        "0"
+                      )}
+                    </span>
+                  </article>
+                );
+              })}
+            </section>
+          )}
+      </main>
+
+      {/* FOOTER SAMA DENGAN MY POKÉMON */}
+      <footer>
+        <PokeballIcon />
+
+        <span>Pokédex Project</span>
+
+        <small>
+          Discover. Catch. Remember.
+        </small>
+      </footer>
+
+      {/* ================= HISTORY CARD STYLE ================= */}
+      <style jsx>{`
+        .history-page {
+          position: relative;
+        }
+
+        .history-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 32px;
+          margin-bottom: 36px;
+        }
+
+        .history-count {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          min-width: 118px;
+          padding: 12px 17px;
+          border: 1px solid #dce3e6;
+          border-radius: 14px;
+          background: #ffffff;
+          color: #142b4a;
+        }
+
+        .history-count svg {
+          width: 20px;
+          height: 20px;
+        }
+
+        .history-count span {
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .history-count small {
+          font-size: 11px;
+          color: #718096;
+        }
+
+        /*
+         * HISTORY CARD
+         * Berbeda dari card My Pokémon.
+         * Dibuat lebih compact dan fokus ke:
+         * gambar → nama → aktivitas → ID
+         */
+        .history-grid {
+          display: grid;
+          grid-template-columns: repeat(
+            auto-fill,
+            minmax(190px, 1fr)
+          );
+          gap: 20px;
+        }
+
+        .history-card {
+          min-height: 270px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 24px 20px 20px;
+          border: 1px solid #e5e7eb;
+          border-radius: 22px;
+          background: #ffffff;
+          box-shadow:
+            0 2px 5px rgba(20, 43, 74, 0.04),
+            0 8px 20px rgba(20, 43, 74, 0.04);
+          transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+        }
+
+        .history-card:hover {
+          transform: translateY(-3px);
+          border-color: #d4dce1;
+          box-shadow:
+            0 5px 10px rgba(20, 43, 74, 0.06),
+            0 14px 28px rgba(20, 43, 74, 0.07);
+        }
+
+        .history-card-image {
+          width: 100%;
+          height: 150px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          border-radius: 16px;
+          background: #f5f8f7;
+          transition: transform 0.2s ease;
+        }
+
+        .history-card-image:hover {
+          transform: scale(1.02);
+        }
+
+        .history-card-image img {
+          width: 140px;
+          height: 140px;
+          object-fit: contain;
+          image-rendering: auto;
+        }
+
+        .history-card-name {
+          margin-top: 16px;
+          color: #142b4a;
+          font-size: 17px;
+          font-weight: 800;
+          line-height: 1.2;
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+
+        .history-card-name:hover {
+          color: #e53935;
+        }
+
+        .history-card-activity {
+          margin-top: 7px;
+          padding: 5px 12px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        .history-card-activity.is-catch {
+          color: #28753b;
+          background: #e7f5e9;
+        }
+
+        .history-card-activity.is-release {
+          color: #a14c4c;
+          background: #f9e9e9;
+        }
+
+        .history-card-id {
+          margin-top: 7px;
+          color: #9aa5b1;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        .history-skeleton {
+          min-height: 270px;
+          background:
+            linear-gradient(
+              90deg,
+              #ffffff 25%,
+              #f3f5f5 50%,
+              #ffffff 75%
+            );
+          background-size: 200% 100%;
+          animation: history-loading 1.4s infinite;
+        }
+
+        @keyframes history-loading {
+          from {
+            background-position: 200% 0;
+          }
+
+          to {
+            background-position: -200% 0;
+          }
+        }
+
+        @media (max-width: 700px) {
+          .history-header {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .history-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+          }
+
+          .history-card {
+            min-height: 245px;
+            padding: 18px 14px;
+          }
+
+          .history-card-image {
+            height: 130px;
+          }
+
+          .history-card-image img {
+            width: 115px;
+            height: 115px;
+          }
+
+          .history-card-name {
+            font-size: 15px;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .history-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
