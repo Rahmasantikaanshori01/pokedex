@@ -36,10 +36,10 @@ class PokemonController extends Controller
 
             $results = collect($data['results'])
                 ->filter(function ($pokemon) use ($search) {
-                    return str_contains(
-                        strtolower($pokemon['name']),
-                        $search
-                    );
+                    $pokemonName = strtolower($pokemon['name']);
+
+                    // Hanya cocok jika nama Pokémon diawali keyword.
+                    return str_starts_with($pokemonName, $search);
                 })
                 ->values()
                 ->map(function ($pokemon) {
