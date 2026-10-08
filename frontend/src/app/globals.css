@@ -929,6 +929,56 @@ main {
   box-shadow: 3px 4px 0 #1f2937;
 }
 
+/* Load More Section */
+.load-more-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 36px;
+  margin-bottom: 24px;
+}
+
+.load-more-btn {
+  min-width: 200px;
+  min-height: 48px;
+  font-size: 14px;
+  max-width: 100%;
+}
+
+.load-more-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: loadMoreSpin 0.8s linear infinite;
+}
+
+@keyframes loadMoreSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.load-more-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border: 1.5px solid #dc3636;
+  border-radius: 16px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+}
+
 /* Skeleton & Loading */
 .skeleton {
   background: linear-gradient(90deg, #eceef1 25%, #f6f7f8 45%, #eceef1 65%);

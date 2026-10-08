@@ -57,6 +57,7 @@ class PokemonController extends Controller
                 'count' => count($results),
                 'next' => null,
                 'previous' => null,
+                'has_more' => false,
                 'results' => $results,
             ]);
         }
@@ -99,6 +100,7 @@ class PokemonController extends Controller
             'count' => $data['count'],
             'next' => $data['next'],
             'previous' => $data['previous'],
+            'has_more' => ($offset + $limit) < (int) $data['count'],
             'results' => $results,
         ]);
     }

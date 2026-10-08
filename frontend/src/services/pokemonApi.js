@@ -12,10 +12,14 @@ export const API_BASE_URL =
  * Mengambil daftar Pokémon dari Laravel Backend.
  *
  * Endpoint:
- * GET /api/pokemon
+ * GET /api/pokemon?limit={limit}&offset={offset}
  */
-export async function getPokemonList({ signal } = {}) {
-  const endpoint = `${API_BASE_URL}/api/pokemon?limit=20&offset=0`;
+export async function getPokemonList({
+  limit = 20,
+  offset = 0,
+  signal,
+} = {}) {
+  const endpoint = `${API_BASE_URL}/api/pokemon?limit=${limit}&offset=${offset}`;
 
   try {
     const response = await fetch(endpoint, {
@@ -34,9 +38,16 @@ export async function getPokemonList({ signal } = {}) {
 
     const json = await response.json();
 
+    const count = json?.count ?? 0;
+    const hasMore =
+      typeof json?.has_more === "boolean"
+        ? json.has_more
+        : offset + limit < count;
+
     return {
       data: Array.isArray(json?.results) ? json.results : [],
-      count: json?.count ?? 0,
+      count,
+      has_more: hasMore,
       next: json?.next ?? null,
       previous: json?.previous ?? null,
       error: null,
@@ -53,6 +64,7 @@ export async function getPokemonList({ signal } = {}) {
     return {
       data: null,
       count: 0,
+      has_more: false,
       next: null,
       previous: null,
       error:

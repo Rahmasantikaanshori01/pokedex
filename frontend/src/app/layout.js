@@ -3,6 +3,9 @@ import "./globals.css";
 export const metadata = {
   title: "Pokédex — Trainer Edition",
   description: "Find your favorite Pokémon, learn what makes them special, and build your dream team.",
+  icons: {
+    icon: "/pokeball.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

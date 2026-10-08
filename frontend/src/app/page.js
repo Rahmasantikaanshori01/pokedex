@@ -30,6 +30,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Pagination states
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(null);
+
   // Input pencarian
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -39,23 +45,29 @@ export default function Home() {
   /**
    * Mengambil daftar Pokémon awal dari Laravel.
    *
-   * GET /api/pokemon
+   * GET /api/pokemon?limit=20&offset=0
    */
   const fetchPokemon = useCallback(() => {
     setIsLoading(true);
     setError(null);
+    setLoadMoreError(null);
 
     const controller = new AbortController();
 
     getPokemonList({
+      limit: 20,
+      offset: 0,
       signal: controller.signal,
     })
       .then((res) => {
         if (res.error) {
           setError(res.error);
           setPokemonList([]);
+          setHasMore(false);
         } else {
           setPokemonList(res.data || []);
+          setOffset(0);
+          setHasMore(Boolean(res.has_more));
           setError(null);
         }
 
@@ -67,6 +79,7 @@ export default function Home() {
             "Gagal memuat data Pokémon. Silakan coba lagi."
           );
           setPokemonList([]);
+          setHasMore(false);
           setIsLoading(false);
         }
       });
@@ -101,6 +114,7 @@ export default function Home() {
 
     setIsLoading(true);
     setError(null);
+    setLoadMoreError(null);
 
     searchPokemonFromApi(keyword, {
       signal: controller.signal,
@@ -109,8 +123,12 @@ export default function Home() {
         if (res.error) {
           setError(res.error);
           setPokemonList([]);
+          setOffset(0);
+          setHasMore(false);
         } else {
           setPokemonList(res.data || []);
+          setOffset(0);
+          setHasMore(false);
           setError(null);
         }
 
@@ -122,6 +140,8 @@ export default function Home() {
             "Gagal melakukan pencarian Pokémon. Silakan coba lagi."
           );
           setPokemonList([]);
+          setOffset(0);
+          setHasMore(false);
           setIsLoading(false);
         }
       });
@@ -132,6 +152,50 @@ export default function Home() {
   const isSearching = Boolean(
     debouncedSearchQuery.trim()
   );
+
+  /**
+   * Mengambil batch Pokémon berikutnya dari Laravel API.
+   *
+   * GET /api/pokemon?limit=20&offset={offset+20}
+   */
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore || isSearching) return;
+
+    setIsLoadingMore(true);
+    setLoadMoreError(null);
+
+    const nextOffset = offset + 20;
+
+    try {
+      const res = await getPokemonList({
+        limit: 20,
+        offset: nextOffset,
+      });
+
+      if (res.error) {
+        setLoadMoreError(res.error);
+      } else {
+        const newPokemon = res.data || [];
+
+        setPokemonList((prev) => {
+          const existingIds = new Set(prev.map((item) => item.id));
+          const uniqueItems = newPokemon.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prev, ...uniqueItems];
+        });
+
+        setOffset(nextOffset);
+        setHasMore(Boolean(res.has_more));
+      }
+    } catch (err) {
+      setLoadMoreError(
+        "Gagal memuat Pokémon berikutnya. Silakan coba lagi."
+      );
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -316,14 +380,56 @@ export default function Home() {
           {!isLoading &&
             !error &&
             pokemonList.length > 0 && (
-              <div className="pokemon-grid">
-                {pokemonList.map((poke) => (
-                  <PokemonCard
-                    key={poke.id}
-                    pokemon={poke}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="pokemon-grid">
+                  {pokemonList.map((poke) => (
+                    <PokemonCard
+                      key={poke.id}
+                      pokemon={poke}
+                    />
+                  ))}
+                </div>
+
+                {/* Load More Section */}
+                {!isSearching && (
+                  <div className="load-more-section">
+                    {loadMoreError && (
+                      <div className="load-more-error" role="alert">
+                        <p>{loadMoreError}</p>
+                        <button
+                          type="button"
+                          className="button button-secondary"
+                          onClick={handleLoadMore}
+                          disabled={isLoadingMore}
+                        >
+                          Coba lagi
+                        </button>
+                      </div>
+                    )}
+
+                    {hasMore && !loadMoreError && (
+                      <button
+                        type="button"
+                        className="button button-primary load-more-btn"
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <span
+                              className="load-more-spinner"
+                              aria-hidden="true"
+                            />
+                            <span>Memuat Pokémon...</span>
+                          </>
+                        ) : (
+                          <span>Load More Pokémon</span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
             )}
         </section>
       </main>
