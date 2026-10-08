@@ -10,11 +10,11 @@ Aplikasi menggunakan **Next.js** untuk frontend, **Laravel** sebagai backend RES
 
 ## 👥 Team
 
-| Nama       | Bagian   |
-| ---------- | -------- |
-| **Rahma**  | Backend  |
-| **Jibril** | Frontend |
-| **Jihan**  | UI/UX    |
+|             Nama              | Bagian   |
+| ----------------------------- | -------- |
+| **Rahma Santika Al Anshori**  | Backend  |
+| **Jibril Ibni Jubair**        | Frontend |
+| **Jihan Fauziah**             | UI/UX    |
 
 ---
 
@@ -595,8 +595,8 @@ Project Pokedex dikembangkan secara bertahap.
 * [x] Catch Pokémon
 * [x] My Pokémon / Koleksi
 * [x] Release Pokémon
-* [ ] Riwayat Pokémon
-* [ ] Integrasi frontend dan backend
+* [x] Riwayat Pokémon
+* [x] Integrasi frontend dan backend
 * [ ] Deployment
 
 Status checklist akan diperbarui sesuai perkembangan project.
