@@ -592,9 +592,9 @@ Project Pokedex dikembangkan secara bertahap.
 * [x] Daftar Pokémon
 * [x] Pencarian Pokémon
 * [x] Detail Pokémon
-* [ ] Catch Pokémon
-* [ ] My Pokémon / Koleksi
-* [ ] Release Pokémon
+* [x] Catch Pokémon
+* [x] My Pokémon / Koleksi
+* [x] Release Pokémon
 * [ ] Riwayat Pokémon
 * [ ] Integrasi frontend dan backend
 * [ ] Deployment
