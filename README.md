@@ -737,7 +737,7 @@ Project Pokedex dikembangkan secara bertahap.
 * [x] Release Pokémon
 * [x] Riwayat Pokémon
 * [x] Integrasi frontend dan backend
-* [x] ] Deployme
+* [x] Deployme
 
 Status checklist akan diperbarui sesuai perkembangan project.
 
