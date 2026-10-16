@@ -21,8 +21,54 @@ class PokemonController extends Controller
         */
 
         if ($search !== '') {
+            /*
+            |------------------------------------------------------------------
+            | PENCARIAN BERDASARKAN ID (numerik)
+            |------------------------------------------------------------------
+            | Jika input adalah angka murni, langsung ambil Pokémon dengan
+            | ID tersebut tanpa perlu mengambil seluruh daftar.
+            */
+            if (ctype_digit($search)) {
+                $detailResponse = Http::get(
+                    "https://pokeapi.co/api/v2/pokemon/{$search}"
+                );
+
+                if ($detailResponse->ok()) {
+                    $pokemon = $detailResponse->json();
+
+                    return response()->json([
+                        'count'    => 1,
+                        'next'     => null,
+                        'previous' => null,
+                        'has_more' => false,
+                        'results'  => [[
+                            'id'    => $pokemon['id'],
+                            'name'  => $pokemon['name'],
+                            'image' => $this->getPokemonImage($pokemon['id']),
+                        ]],
+                    ]);
+                }
+
+                // Jika ID tidak ditemukan, kembalikan hasil kosong
+                return response()->json([
+                    'count'    => 0,
+                    'next'     => null,
+                    'previous' => null,
+                    'has_more' => false,
+                    'results'  => [],
+                ]);
+            }
+
+            /*
+            |------------------------------------------------------------------
+            | PENCARIAN BERDASARKAN NAMA (depan, belakang, atau tengah)
+            |------------------------------------------------------------------
+            | str_contains() mencocokkan substring di posisi mana pun dalam
+            | nama, sehingga pencarian "saur" akan menemukan "bulbasaur",
+            | "ivysaur", dan "venusaur".
+            */
             $response = Http::get('https://pokeapi.co/api/v2/pokemon', [
-                'limit' => 2000,
+                'limit'  => 2000,
                 'offset' => 0,
             ]);
 
@@ -36,29 +82,30 @@ class PokemonController extends Controller
 
             $results = collect($data['results'])
                 ->filter(function ($pokemon) use ($search) {
-                    $pokemonName = strtolower($pokemon['name']);
-
-                    // Hanya cocok jika nama Pokémon diawali keyword.
-                    return str_starts_with($pokemonName, $search);
+                    // Cocokkan substring di mana saja dalam nama
+                    return str_contains(
+                        strtolower($pokemon['name']),
+                        $search
+                    );
                 })
                 ->values()
                 ->map(function ($pokemon) {
                     $id = $this->getPokemonIdFromUrl($pokemon['url']);
 
                     return [
-                        'id' => $id,
-                        'name' => $pokemon['name'],
+                        'id'    => $id,
+                        'name'  => $pokemon['name'],
                         'image' => $this->getPokemonImage($id),
                     ];
                 })
                 ->all();
 
             return response()->json([
-                'count' => count($results),
-                'next' => null,
+                'count'    => count($results),
+                'next'     => null,
                 'previous' => null,
                 'has_more' => false,
-                'results' => $results,
+                'results'  => $results,
             ]);
         }
 
